@@ -1,10 +1,11 @@
+use lib "lib";
 use Dancer;
-load_app 'Library';
+use Library;
 
 use Dancer::Config 'setting';
 setting apphandler => 'PSGI';
-setting logger => 'PSGI';
-setting session => 'PSGI';
+#setting logger => 'PSGI';
+#setting session => 'PSGI';
 Dancer::Config->load;
 
 
@@ -12,7 +13,7 @@ use Plack::Builder;
 my $app = sub {
     my $env = shift;
     my $request = Dancer::Request->new( $env );
-    Dancer->dance( $request );
+    Library->dance( $request );
 };
 
 builder {
