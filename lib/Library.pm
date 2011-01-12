@@ -17,9 +17,36 @@ get '/' => sub {
 ## index method, simply list 
 
 before sub {
+
+	if (! session('user') && request->path_info !~ m{^/login}) {
+        var requested_path => request->path_info;
+        request->path_info('/login');
+    }
+
+
 	my $schema = setting('db');
-	debug "current path is " . request->path;
+	
+	## replace this by logged in user
+
 	$schema->user(1);
+	
+	## current path is request->path
+};
+
+get '/login' => sub {
+	
+	template 'login', { path => vars->{requested_path} };
+};
+
+post '/login' => sub {
+	
+	if (params->{user} eq 'bob' && params->{pass} eq 'letmein') {
+        # session user => params->{user};
+         redirect params->{path} || '/';
+    } else {
+        redirect '/login?failed=1';
+    }
+
 };
 
 get '/api/:model' => sub {
@@ -27,17 +54,13 @@ get '/api/:model' => sub {
 	my $schema = setting('db');
     my $params = request->params;
 	
-	debug $schema->sources;
-
 	if (grep(/$params->{'model'}/, $schema->sources  )   ) {
 		
-		debug "coming here";
 		my $rs = $schema->resultset( $params->{'model'} );
 		my $list = $rs->recent->serialize;
 		return { data => $list };
 	}else {
 		
-		debug "coming here too";
 		return( {error => "model cannot be fond" });
 	}
 	

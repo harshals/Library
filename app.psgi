@@ -4,8 +4,9 @@ use Library;
 
 use Dancer::Config 'setting';
 setting apphandler => 'PSGI';
-#setting logger => 'PSGI';
-#setting session => 'PSGI';
+setting logger => 'PSGI';
+setting session => 'Simple';
+setting access_log => 0;
 Dancer::Config->load;
 
 
