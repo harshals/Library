@@ -4,8 +4,9 @@
 # console: log messages to STDOUT (your console where you started the
 #          application server)
 # file:    log message to a file in log/
-logger: "PSGI"
+logger: "console"
 
+session: "Simple"
 # the log level for this environement
 # core is the lowest, it shows Dancer's core log messages as well as yours
 # (debug, warning and error)

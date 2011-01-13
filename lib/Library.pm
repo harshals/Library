@@ -7,6 +7,7 @@ use Data::Dumper;
 our $VERSION = '0.1';
 
 set serializer => 'JSON';
+set session => 'Simple';
 
 set 'db' => Schema->new()->init_schema("small.db");
 
@@ -18,10 +19,10 @@ get '/' => sub {
 
 before sub {
 
-	if (! session('user') && request->path_info !~ m{^/login}) {
-        var requested_path => request->path_info;
-        request->path_info('/login');
-    }
+	#if (! session('user') && request->path_info !~ m{^/login}) {
+    #    var requested_path => request->path_info;
+    #    request->path_info('/login');
+    #}
 
 
 	my $schema = setting('db');
@@ -34,13 +35,14 @@ before sub {
 };
 
 get '/login' => sub {
-	
+		
+	session user => 1;
 	template 'login', { path => vars->{requested_path} };
 };
 
 post '/login' => sub {
 	
-	if (params->{user} eq 'bob' && params->{pass} eq 'letmein') {
+	if (params->{user} eq 'bob' && params->{password} eq 'letmein') {
         # session user => params->{user};
          redirect params->{path} || '/';
     } else {
@@ -58,7 +60,7 @@ get '/api/:model' => sub {
 		
 		my $rs = $schema->resultset( $params->{'model'} );
 		my $list = $rs->recent->serialize;
-		return { data => $list };
+		return { user => session('user') , data => $list };
 	}else {
 		
 		return( {error => "model cannot be fond" });
