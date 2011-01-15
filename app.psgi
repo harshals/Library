@@ -1,12 +1,11 @@
-use lib "lib";
 use Dancer;
-use Library;
+load_app 'Library';
 
 use Dancer::Config 'setting';
-setting apphandler => 'PSGI';
-setting logger => 'PSGI';
-setting session => 'Simple';
-setting access_log => 0;
+#setting apphandler => 'PSGI';
+#setting logger => 'PSGI';
+#setting session => 'PSGI';
+#setting access_log => 0;
 Dancer::Config->load;
 
 
@@ -14,13 +13,13 @@ use Plack::Builder;
 my $app = sub {
     my $env = shift;
     my $request = Dancer::Request->new( $env );
-    Library->dance( $request );
+    Dancer->dance( $request );
 };
 
 builder {
 
-	mount "/debug" => builder {
-		enable 'Session', store => 'File';
+	mount "/" => builder {
+		enable 'Session';
 		enable 'Debug' ,
 			panels => [qw/Memory Response Timer Environment Dancer::Settings Dancer::Logger Parameters Dancer::Version Session DBIC::QueryLog/];
     	enable "ConsoleLogger";
@@ -33,13 +32,6 @@ builder {
 
     	$app;
 	};
-	mount "/" => builder {
-		#enable 'Session';
-		enable "Plack::Middleware::Static",
-          	   path => qr{^/(images|javascript|css)/}, root => './public/';
-		$app;
-	};
-	
 	
 };
 

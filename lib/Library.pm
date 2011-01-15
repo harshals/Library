@@ -1,5 +1,6 @@
 
 package Library;
+use lib "lib";
 use Dancer ':syntax';
 use Schema;
 use Data::Dumper;
@@ -7,7 +8,6 @@ use Data::Dumper;
 our $VERSION = '0.1';
 
 set serializer => 'JSON';
-set session => 'Simple';
 
 set 'db' => Schema->new()->init_schema("small.db");
 
@@ -19,14 +19,16 @@ get '/' => sub {
 
 before sub {
 
-	#if (! session('user') && request->path_info !~ m{^/login}) {
-    #    var requested_path => request->path_info;
-    #    request->path_info('/login');
-    #}
+	if (! session('user') && request->path_info !~ m{^/login}) {
+        var requested_path => request->path_info;
+        request->path_info('/login');
+    }
 
 
-	my $schema = setting('db');
+	my $schema = Schema->new()->init_schema("small.db");
 	
+	debug "schema type is " . ref($schema);
+
 	## replace this by logged in user
 
 	$schema->user(1);
@@ -42,8 +44,8 @@ get '/login' => sub {
 
 post '/login' => sub {
 	
-	if (params->{user} eq 'bob' && params->{password} eq 'letmein') {
-        # session user => params->{user};
+	if (params->{username} eq 'bob' && params->{password} eq 'letmein') {
+         session user => params->{username};
          redirect params->{path} || '/';
     } else {
         redirect '/login?failed=1';
