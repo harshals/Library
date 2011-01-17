@@ -17,8 +17,8 @@
             <h3>Join the community</h3>
             <ul class="links">
 
-              <li><a href="http://perldancer.org/">PerlDancer</a></li>
-              <li><a href="http://twitter.com/PerlDancer/">Official Twitter</a></li>
+              <li><a href="/logout">Logout</a></li>
+              <li><a href="#books" id="books">Fetch Books</a></li>
               <li><a href="http://github.com/sukria/Dancer/">GitHub Community</a></li>
             </ul>
           </li>

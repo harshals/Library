@@ -1,15 +1,18 @@
 
+
 package Library;
+
 use lib "lib";
 use Dancer ':syntax';
 use Schema;
+use Dancer::Plugin::DBIC;
 use Data::Dumper;
 
 our $VERSION = '0.1';
 
 set serializer => 'JSON';
 
-set 'db' => Schema->new()->init_schema("small.db");
+#set 'db' => Schema->new()->init_schema("small.db");
 
 get '/' => sub {
     template 'index';
@@ -25,13 +28,13 @@ before sub {
     }
 
 
-	my $schema = Schema->new()->init_schema("small.db");
+	my $schema = schema('Schema');
 	
-	debug "schema type is " . ref($schema);
+	debug "schema user is " . $schema->user;
 
 	## replace this by logged in user
 
-	$schema->user(1);
+	#$schema->user(1);
 	
 	## current path is request->path
 };
@@ -46,6 +49,7 @@ post '/login' => sub {
 	
 	if (params->{username} eq 'bob' && params->{password} eq 'letmein') {
          session user => params->{username};
+         schema('Schema')->user(session('user'));
          redirect params->{path} || '/';
     } else {
         redirect '/login?failed=1';
@@ -55,7 +59,7 @@ post '/login' => sub {
 
 get '/api/:model' => sub {
 
-	my $schema = setting('db');
+	my $schema = schema('Schema');
     my $params = request->params;
 	
 	if (grep(/$params->{'model'}/, $schema->sources  )   ) {

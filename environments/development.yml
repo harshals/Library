@@ -29,3 +29,9 @@ show_errors: 1
 # DO NOT EVER USE THAT FEATURE IN PRODUCTION 
 # OR TINY KITTENS SHALL DIE WITH LOTS OF SUFFERING
 auto_reload: 0
+
+plugins:
+  DBIC:
+    Schema:
+      dsn: "dbi:SQLite:dbname=./small.db"
+

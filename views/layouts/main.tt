@@ -22,13 +22,18 @@
 	/* Handle all routes starting with #/form- */
 
 	
-	;(function($) {
-		
+	$(document).ready(function() { 
+
 		$("form").ajaxForm(function() {
 			alert("thank you for your comment");
 		});
-
-    })(jQuery);
+		
+		$("#books").click(function(ev) {
+			
+			alert("coming here");
+			return false;
+		});
+	});
 	
 </script>
 

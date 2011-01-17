@@ -5,8 +5,7 @@ use warnings;
 
 use Moose;
 use namespace::clean -except => 'meta';
-#use base qw/Schema::Base::Result/;
-extends qw/Schema::Base::Result/;
+extends qw/DBICx::Hybrid::Result/;
 use Data::Dumper qw/Dumper/;
 
 __PACKAGE__->table("author");
