@@ -2,7 +2,7 @@ package Schema;
 
 use strict;
 use warnings;
-
+use Dancer;
 use Moose;
 use namespace::clean -except => 'meta';
 extends 'DBIx::Class::Schema';
@@ -39,11 +39,17 @@ has "logger" => (isa => "FileHandle" , is => 'rw', default => sub { \*STDERR } )
 # Created by DBIx::Class::Schema::Loader v0.04006 @ 2009-08-13 21:11:53
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:N0Xbzj17pzNa19V7V+UXzQ
 
-after 'connect' => sub {
+around 'connect' => sub {
 	
+	my $orig = shift;
 	my $self = shift;
+	my @connect_info = @_;
 
-	$self->log("schema instantiated") if $schema;
+	my $schema = $self->$orig(@connect_info);
+	
+	$schema->log("schema instantiated in debug mode");
+
+	$schema;
 };
 
 sub init_schema {
@@ -56,17 +62,47 @@ sub init_schema {
 
     my $schema = $self->connect("dbi:$db:dbname=$name;host=$host", $user, $password) || die "Could no connect";
 
-	$self->log("schema instantiated") if $schema;
+	$schema->log("schema instantiated") if $schema;
 
 	return $schema;
 }
 
+sub init_debugger {
+	
+	my $self = shift;
+	my $querylog = shift;
+	
+	if ($querylog) {
+		$self->log("Initiating debugger ");
+		$self->storage->debug(1);
+		$self->storage->debugobj($querylog);
+	}
+	
+	$self;
+}
+
+
 sub log {
 	my $self = shift;
 	my $message = shift;
+	
+	$message = "DBIC: $message";
+	my $request = Dancer::SharedData->request;
+    if ($request->{env}->{'psgix.logger'}) {
+		
+        $request->{env}->{'psgix.logger'}->(
+            {   
+				level => 'debug',
+                message => $message
+            }
+        );
+    }else {
 
-	say {$self->logger()} $message if $self->debug;
+		say {$self->logger()} $message if $self->debug;
+	}
+	
 }
+
 
 
 __PACKAGE__->meta->make_immutable;

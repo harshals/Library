@@ -6,7 +6,7 @@
 # file:    log message to a file in log/
 apphandler: "PSGI"
 
-logger: "PSGI"
+logger: "console"
 
 session : "PSGI"
 
@@ -21,6 +21,8 @@ warnings: 1
 # should Dancer show a stacktrace when an error is caught?
 show_errors: 1
 
+loggedin : 1
+
 # auto_reload is a development and experimental feature
 # you should enable it by yourself if you want it
 # Module::Refresh is needed 
@@ -32,6 +34,7 @@ auto_reload: 0
 
 plugins:
   DBIC:
-    Schema:
+    db:
+      schema_class: "Schema"
       dsn: "dbi:SQLite:dbname=./small.db"
 

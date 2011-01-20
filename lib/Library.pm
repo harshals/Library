@@ -1,18 +1,15 @@
-
-
 package Library;
 
-use lib "lib";
 use Dancer ':syntax';
-use Schema;
 use Dancer::Plugin::DBIC;
 use Data::Dumper;
+use Plack::Middleware::Debug::DBIC::QueryLog;
+
 
 our $VERSION = '0.1';
 
 set serializer => 'JSON';
 
-#set 'db' => Schema->new()->init_schema("small.db");
 
 get '/' => sub {
     template 'index';
@@ -21,27 +18,40 @@ get '/' => sub {
 ## index method, simply list 
 
 before sub {
+		
+	my $schema = schema('db');
+	$schema->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
 
-	if (! session('user') && request->path_info !~ m{^/login}) {
+	if (! config->{loggedin} && ! session('user') && request->path_info !~ m{^/login}) {
         var requested_path => request->path_info;
         request->path_info('/login');
     }
 
-
-	my $schema = schema('Schema');
+	$schema->user(1);
 	
-	debug "schema user is " . $schema->user;
+	if (exists request->params->{model}) {
+		
+		my $sources = join(',', $schema->sources);
+		my $model = request->params->{'model'};
+		
+		unless ( $sources =~ m/$model/) {
+			
+			request->path_info('/error');
+		}
+	}
 
-	## replace this by logged in user
 
-	#$schema->user(1);
+};
+
+get '/logout' => sub {
 	
-	## current path is request->path
+	session user => '';
+	set 'db' => '';
+	template 'login';
 };
 
 get '/login' => sub {
 		
-	session user => 1;
 	template 'login', { path => vars->{requested_path} };
 };
 
@@ -49,7 +59,6 @@ post '/login' => sub {
 	
 	if (params->{username} eq 'bob' && params->{password} eq 'letmein') {
          session user => params->{username};
-         schema('Schema')->user(session('user'));
          redirect params->{path} || '/';
     } else {
         redirect '/login?failed=1';
@@ -59,38 +68,72 @@ post '/login' => sub {
 
 get '/api/:model' => sub {
 
-	my $schema = schema('Schema');
-    my $params = request->params;
+    my $model = request->params->{'model'};
 	
-	if (grep(/$params->{'model'}/, $schema->sources  )   ) {
+	my $schema = schema('db');
+
+	return { data => $schema->resultset($model)->recent->serialize };
+	
+};
+
+get '/api/:model/:id' => sub {
+
+    my $model = request->params->{'model'};
+	my $id = request->params->{'id'};
+
+	my $schema = schema('db');
+	
+	my $row = $schema->resultset($model)->fetch(request->params->{id});
+
+	unless ($row) {
 		
-		my $rs = $schema->resultset( $params->{'model'} );
-		my $list = $rs->recent->serialize;
-		return { user => session('user') , data => $list };
-	}else {
-		
-		return( {error => "model cannot be fond" });
+		var error => "$model with id $id not found";
+		redirect '/error';
 	}
 	
+	return { data => $row->serialize, message => "Mission Successfull" };
+	
+};
+
+
+post '/api/:model/:id' => sub {
+	
+	my $model = request->params->{'model'};
+	my $id = request->params->{'id'};
+	
+	my $schema = schema('db');
+
+	my $row = $schema->resultset($model)->fetch(request->params->{id});
+
+	return ( { data => {}, error => "row not found" }) unless $row;
+
+	$row->save(request->params);
+	
+	return { data => $row->serialize };
 };
 
 post '/api/:model' => sub {
-
-	my $schema = setting('db');
-    my $params = request->params;
 	
-	if (grep(/$params->{'model'}/, $schema->sources  )   ) {
-
-		my $rs = $schema->resultset( $params->{'model'} );
-		my $list = $rs->recent->serialize;
-		return { data => $list };
-	}else {
-		
-		send_error("Model cannot be found");
-	}
+	my $model = request->params->{'model'};
 	
+	my $schema = schema('db');
+
+	my $new = $schema->resultset($model)->fetch_new();
+
+	$new->save(request->params);
+	
+	return { data => $new->serialize };
 };
 
+any 'error' => sub {
+	
+
+	my $error = Dancer::Error->new(
+       	code    => 501,
+       	message => vars->{error}
+   	);
+   	$error->render;
+};
 
 
 true;
