@@ -34,7 +34,10 @@ auto_reload: 0
 
 plugins:
   DBIC:
-    db:
-      schema_class: "Schema"
+    db1:
+      schema_class: "Schema1"
+      dsn: "dbi:SQLite:dbname=./small.db"
+   db2:
+      schema_class: "Schema2"
       dsn: "dbi:SQLite:dbname=./small.db"
 

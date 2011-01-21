@@ -66,15 +66,31 @@ post '/login' => sub {
 
 };
 
+## get list of all items
+
 get '/api/:model' => sub {
 
     my $model = request->params->{'model'};
 	
 	my $schema = schema('db');
 
-	return { data => $schema->resultset($model)->recent->serialize };
+	return { data => $schema->resultset($model)->look_for(request->params)->serialize , message => "" };
 	
 };
+
+get '/api/search/:model/:stored_precedure' => sub {
+	
+
+    my $model = request->params->{'model'};
+	
+	my $schema = schema('db');
+
+	my $stored_prcedure = request->params->{'stored_procedure'};
+
+	return { data => $schema->resultset($model)->$stored_procedure(request->params);
+}
+
+#get single item
 
 get '/api/:model/:id' => sub {
 
@@ -85,16 +101,11 @@ get '/api/:model/:id' => sub {
 	
 	my $row = $schema->resultset($model)->fetch(request->params->{id});
 
-	unless ($row) {
-		
-		var error => "$model with id $id not found";
-		redirect '/error';
-	}
-	
-	return { data => $row->serialize, message => "Mission Successfull" };
+	return { data => $row->serialize, message => "" };
 	
 };
 
+# update single item
 
 post '/api/:model/:id' => sub {
 	
@@ -112,6 +123,8 @@ post '/api/:model/:id' => sub {
 	return { data => $row->serialize };
 };
 
+# submit a search request
+
 post '/api/:model' => sub {
 	
 	my $model = request->params->{'model'};
@@ -122,17 +135,37 @@ post '/api/:model' => sub {
 
 	$new->save(request->params);
 	
-	return { data => $new->serialize };
+	return { data => $new->serialize , message => "saved successfully"};
+}
+
+# create new item
+post '/api/:model/new' => sub {
+	
+	my $model = request->params->{'model'};
+	
+	my $schema = schema('db');
+
+	my $new = $schema->resultset($model)->fetch_new();
+
+	$new->save(request->params);
+	
+	return { data => $new->serialize , message => "saved successfully"};
 };
 
 any 'error' => sub {
 	
-
 	my $error = Dancer::Error->new(
        	code    => 501,
        	message => vars->{error}
    	);
    	$error->render;
+};
+
+after sub {
+	
+	my $response = shift;
+
+	debug Dumper($response);
 };
 
 

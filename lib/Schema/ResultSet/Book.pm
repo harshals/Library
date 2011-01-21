@@ -21,6 +21,33 @@ override 'prefetch_related' => sub {
 	} );
 };
 
+around 'look_for' => sub {
+
+	my $orig = shift;
+	my $self = shift;
+
+	my $params = shift;
+	my $search  = shift;
+
+	## my search parameters are title, publish_date, price and classification
+	
+	
+	$search->{'publish_date'} = { '<=' , $params->{'to_date'} };
+	$search->{'publish_date'} = { '>=' , $params->{'from_date'} };
+
+	
+
+	$self->$orig($search);
+	
+};
+
+sub for_category {
+	
+	my $self = shift;
+	my $category_id = shift;
+
+	return $self->look_for( { category_id => $category_id});
+}
 
 
 1;
