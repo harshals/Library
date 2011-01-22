@@ -74,21 +74,38 @@ get '/api/:model' => sub {
 	
 	my $schema = schema('db');
 
-	return { data => $schema->resultset($model)->look_for(request->params)->serialize , message => "" };
+	return { data => $schema->resultset($model)->recent(10)->serialize , message => "" };
 	
 };
 
-get '/api/search/:model/:stored_precedure' => sub {
+get '/api/:model/search' => sub {
 	
 
     my $model = request->params->{'model'};
 	
 	my $schema = schema('db');
 
-	my $stored_prcedure = request->params->{'stored_procedure'};
+	return { data => $schema->resultset($model)->look_for(request->params)->serialize }
+};
 
-	return { data => $schema->resultset($model)->$stored_procedure(request->params);
-}
+any '/api/:model/custom/:query' => sub {
+
+	my $model = request->params->{'model'};
+	
+	my $schema = schema('db');
+
+	my $query = request->params->{'query'};
+
+	if ($schema->resultset($model)->can($query)) {
+
+		return { data => $schema->resultset($model)->$query(request->params)->serialize }
+	}else {
+		
+		send_error("Unkown query > $query ");
+	}
+	
+
+};
 
 #get single item
 
@@ -136,7 +153,7 @@ post '/api/:model' => sub {
 	$new->save(request->params);
 	
 	return { data => $new->serialize , message => "saved successfully"};
-}
+};
 
 # create new item
 post '/api/:model/new' => sub {

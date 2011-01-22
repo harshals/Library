@@ -16,7 +16,6 @@ __PACKAGE__->add_columns(
 		"publish_year", { data_type => "INTEGER", is_nullable => 0 },
 		"category_id", { data_type => "INTEGER", is_nullable => 0 },
 		"price", { data_type => "REAL", is_nullable => 0 },
-		"classification", { data_type => "VARCHAR(11)", is_nullable => 0 },
 );
 
 __PACKAGE__->add_base_columns;

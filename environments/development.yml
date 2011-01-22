@@ -6,7 +6,7 @@
 # file:    log message to a file in log/
 apphandler: "PSGI"
 
-logger: "console"
+logger: "PSGI"
 
 session : "PSGI"
 
@@ -34,10 +34,7 @@ auto_reload: 0
 
 plugins:
   DBIC:
-    db1:
-      schema_class: "Schema1"
-      dsn: "dbi:SQLite:dbname=./small.db"
-   db2:
-      schema_class: "Schema2"
+    db:
+      schema_class: "User1"
       dsn: "dbi:SQLite:dbname=./small.db"
 

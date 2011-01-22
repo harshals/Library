@@ -27,11 +27,6 @@ index just forwards to share.
 
 
 
-__PACKAGE__->load_namespaces(
-        result_namespace => 'Result',
-        resultset_namespace => 'ResultSet',
-        default_resultset_class => '+DBICx::Hybrid::ResultSet');
-
 has "user" => (isa => "Int", is => "rw", default => 1);
 has "debug" => (isa => "Int", is => "rw", default => 1);
 has "logger" => (isa => "FileHandle" , is => 'rw', default => sub { \*STDERR } );
