@@ -2,6 +2,7 @@ package Library;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Memcached;
 use Data::Dumper;
 use Plack::Middleware::Debug::DBIC::QueryLog;
 
@@ -10,8 +11,15 @@ our $VERSION = '0.1';
 
 set serializer => 'JSON';
 
+my $users = { 'bob' => { 'pass' => 'letmein' , schema => 'User1', db_name => 'user1.db', id => 1 , schema_obj => ''} ,
+			  'chris' => { 'pass' => 'letmein' , schema => 'User2', db_name => 'user2.db', id => 1 , schema_obj => ''}
+			};
+
+my $schema = '';
 
 get '/' => sub {
+
+	#$schema->resultset("Book")->look_for->serialize;
     template 'index';
 };
 
@@ -19,28 +27,31 @@ get '/' => sub {
 
 before sub {
 		
-	my $schema = schema('db');
-	$schema->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
 
-	if (! config->{loggedin} && ! session('user') && request->path_info !~ m{^/login}) {
+	if (! session('user') && request->path_info !~ m{^/login}) {
         var requested_path => request->path_info;
+        
         request->path_info('/login');
+
+
+    } elsif (request->path_info !~ m{^/login} ){
+        
+		$schema->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
+
+		if (exists request->params->{model}) {
+
+			my $sources = join(',', $schema->sources);
+			my $model = request->params->{'model'};
+
+			unless ( $sources =~ m/$model/) {
+				
+				debug "model cannot be found";
+				request->path_info('/error');
+			}
+		}
     }
 
-	$schema->user(1);
 	
-	if (exists request->params->{model}) {
-		
-		my $sources = join(',', $schema->sources);
-		my $model = request->params->{'model'};
-		
-		unless ( $sources =~ m/$model/) {
-			
-			request->path_info('/error');
-		}
-	}
-
-
 };
 
 get '/logout' => sub {
@@ -57,9 +68,20 @@ get '/login' => sub {
 
 post '/login' => sub {
 	
-	if (params->{username} eq 'bob' && params->{password} eq 'letmein') {
-         session user => params->{username};
-         redirect params->{path} || '/';
+	if (params->{username}  && params->{password} eq  $users->{params->{username} }->{pass} ) {
+        
+        session user => params->{username};
+
+		$schema = schema( session('user') );
+
+		$schema->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
+		
+		$schema->user( $users->{ session('user') }->{id} );
+
+		$users->{ session('user') }->{'schema_obj'} = $schema;
+
+        redirect params->{path} || '/';
+
     } else {
         redirect '/login?failed=1';
     }
@@ -72,7 +94,8 @@ get '/api/:model' => sub {
 
     my $model = request->params->{'model'};
 	
-	my $schema = schema('db');
+	#my $schema = schema('db');
+	#my $schema = $users->{ session('user') }->{'schema_obj'};
 
 	return { data => $schema->resultset($model)->recent(10)->serialize , message => "" };
 	
@@ -83,7 +106,8 @@ get '/api/:model/search' => sub {
 
     my $model = request->params->{'model'};
 	
-	my $schema = schema('db');
+	#my $schema = schema('db');
+	#my $schema = $users->{ session('user') }->{'schema_obj'};
 
 	return { data => $schema->resultset($model)->look_for(request->params)->serialize }
 };
@@ -92,7 +116,8 @@ any '/api/:model/custom/:query' => sub {
 
 	my $model = request->params->{'model'};
 	
-	my $schema = schema('db');
+	#my $schema = schema('db');
+	#my $schema = $users->{ session('user') }->{'schema_obj'};
 
 	my $query = request->params->{'query'};
 
@@ -114,7 +139,7 @@ get '/api/:model/:id' => sub {
     my $model = request->params->{'model'};
 	my $id = request->params->{'id'};
 
-	my $schema = schema('db');
+	#my $schema = schema('db');
 	
 	my $row = $schema->resultset($model)->fetch(request->params->{id});
 
@@ -129,7 +154,7 @@ post '/api/:model/:id' => sub {
 	my $model = request->params->{'model'};
 	my $id = request->params->{'id'};
 	
-	my $schema = schema('db');
+	#my $schema = schema('db');
 
 	my $row = $schema->resultset($model)->fetch(request->params->{id});
 
@@ -146,7 +171,7 @@ post '/api/:model' => sub {
 	
 	my $model = request->params->{'model'};
 	
-	my $schema = schema('db');
+	#my $schema = schema('db');
 
 	my $new = $schema->resultset($model)->fetch_new();
 
@@ -160,7 +185,7 @@ post '/api/:model/new' => sub {
 	
 	my $model = request->params->{'model'};
 	
-	my $schema = schema('db');
+	#my $schema = schema('db');
 
 	my $new = $schema->resultset($model)->fetch_new();
 
@@ -182,7 +207,7 @@ after sub {
 	
 	my $response = shift;
 
-	debug Dumper($response);
+	#debug Dumper($response);
 };
 
 

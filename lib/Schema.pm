@@ -26,7 +26,6 @@ index just forwards to share.
 =cut
 
 
-
 has "user" => (isa => "Int", is => "rw", default => 1);
 has "debug" => (isa => "Int", is => "rw", default => 1);
 has "logger" => (isa => "FileHandle" , is => 'rw', default => sub { \*STDERR } );

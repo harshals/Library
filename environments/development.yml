@@ -21,7 +21,7 @@ warnings: 1
 # should Dancer show a stacktrace when an error is caught?
 show_errors: 1
 
-loggedin : 1
+loggedin : 0
 
 # auto_reload is a development and experimental feature
 # you should enable it by yourself if you want it
@@ -34,7 +34,13 @@ auto_reload: 0
 
 plugins:
   DBIC:
-    db:
-      schema_class: "User1"
-      dsn: "dbi:SQLite:dbname=./small.db"
-
+     bob:
+       schema_class: "User1"
+       dsn: "dbi:SQLite:dbname=./user1.db"
+     chris:
+       schema_class: "User2"
+       dsn: "dbi:SQLite:dbname=./user2.db"
+  Memcached:
+   servers: 
+     - "localhost:11211"
+   default_timeout: 86400

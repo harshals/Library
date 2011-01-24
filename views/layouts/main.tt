@@ -24,7 +24,7 @@
 	
 	$(document).ready(function() { 
 
-		$("form").ajaxForm(function() {
+		$("form2").ajaxForm(function() {
 			alert("thank you for your comment");
 		});
 		
