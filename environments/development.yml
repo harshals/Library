@@ -34,10 +34,13 @@ auto_reload: 0
 
 plugins:
   DBIC:
-     bob:
+     db:
+       schema_class: "Master"
+       dsn: "dbi:SQLite:dbname=./master.db"
+     User1:
        schema_class: "User1"
        dsn: "dbi:SQLite:dbname=./user1.db"
-     chris:
+     User2:
        schema_class: "User2"
        dsn: "dbi:SQLite:dbname=./user2.db"
   Memcached:

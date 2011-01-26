@@ -1,4 +1,4 @@
-package Schema;
+package Master;
 
 use strict;
 use warnings;
@@ -18,6 +18,13 @@ Catalyst Controller.
 
 =cut
 
+__PACKAGE__->load_namespaces(
+
+        result_namespace => [ 'Result'],
+        resultset_namespace => [  'ResultSet'],
+        default_resultset_class => '+DBICx::Hybrid::ResultSet');
+
+
 
 =head2 index
 
@@ -25,14 +32,6 @@ index just forwards to share.
 
 =cut
 
-=pod
-__PACKAGE__->load_namespaces(
-
-        result_namespace => [ 'Result'],
-        resultset_namespace => [  'ResultSet'],
-        default_resultset_class => '+DBICx::Hybrid::ResultSet');
-
-=cut
 
 has "user" => (isa => "Int", is => "rw", default => 1);
 has "debug" => (isa => "Int", is => "rw", default => 1);

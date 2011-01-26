@@ -6,20 +6,59 @@ use Dancer::Plugin::Memcached;
 use Data::Dumper;
 use Plack::Middleware::Debug::DBIC::QueryLog;
 
+use Admin::Login;
+use Admin::Init;
+use User1App;
+use User2App;
 
 our $VERSION = '0.1';
 
 set serializer => 'JSON';
 
-my $users = { 'bob' => { 'pass' => 'letmein' , schema => 'User1', db_name => 'user1.db', id => 1 , schema_obj => ''} ,
-			  'chris' => { 'pass' => 'letmein' , schema => 'User2', db_name => 'user2.db', id => 1 , schema_obj => ''}
-			};
-
 my $schema = '';
+my $user = '';
+my $application = '';
+
+my $my_schemas = {};
+my $users = {};
+
+sub my_schema {
+
+	my $name = shift;
+	
+    return $my_schemas->{$application->id} if $my_schemas->{$application->id};
+	
+	$name = $application->id;
+
+	## borrow generic options of master db
+
+	die "The generic schema for master db is not configured"
+		unless $application->schema_class ;
+
+	my $dbname = $application->db_name;
+	
+    my @conn_info =  ("dbi:SQLite:dbname=$dbname");
+    
+    # pckg should be deprecated
+    my $schema_class = $application->schema_class;
+
+    if ($schema_class) {
+        $schema_class =~ s/-/::/g;
+        eval "use $schema_class";
+        if ( my $err = $@ ) {
+            die "error while loading $schema_class : $err";
+        }
+        $my_schemas->{$name} = $schema_class->connect(@conn_info)
+    }
+
+    return $my_schemas->{$name};
+};
+
+
+
 
 get '/' => sub {
 
-	#$schema->resultset("Book")->look_for->serialize;
     template 'index';
 };
 
@@ -28,15 +67,32 @@ get '/' => sub {
 before sub {
 		
 
-	if (! session('user') && request->path_info !~ m{^/login}) {
+	if (! session('user_id') && request->path_info !~ m{^/(login|init)}) {
         var requested_path => request->path_info;
         
         request->path_info('/login');
 
 
-    } elsif (request->path_info !~ m{^/login} ){
+    } elsif (request->path_info !~ m{^/(login|logout|init)} ){
         
+		$user = $users->{ session('user_id') } ;
+
+		my $master = schema('db');
+
+
+		$master->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
+		
+		$user = $users->{ session('user_id') } =  $master->resultset('User')->find( session('user_id') )->serialize
+			unless $user;
+		
+        $application = schema('db')->resultset('Application')->find( $user->{application_id} );
+
+		#debug Dumper($application->serialize);
+
+		$schema = my_schema( $application->schema_class );
+		
 		$schema->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
+
 
 		if (exists request->params->{model}) {
 
@@ -45,47 +101,13 @@ before sub {
 
 			unless ( $sources =~ m/$model/) {
 				
-				debug "model cannot be found";
-				request->path_info('/error');
+				send_error("model cannot be found");
+				#request->path_info('/error');
 			}
 		}
     }
 
 	
-};
-
-get '/logout' => sub {
-	
-	session user => '';
-	set 'db' => '';
-	template 'login';
-};
-
-get '/login' => sub {
-		
-	template 'login', { path => vars->{requested_path} };
-};
-
-post '/login' => sub {
-	
-	if (params->{username}  && params->{password} eq  $users->{params->{username} }->{pass} ) {
-        
-        session user => params->{username};
-
-		$schema = schema( session('user') );
-
-		$schema->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
-		
-		$schema->user( $users->{ session('user') }->{id} );
-
-		$users->{ session('user') }->{'schema_obj'} = $schema;
-
-        redirect params->{path} || '/';
-
-    } else {
-        redirect '/login?failed=1';
-    }
-
 };
 
 ## get list of all items
@@ -94,8 +116,6 @@ get '/api/:model' => sub {
 
     my $model = request->params->{'model'};
 	
-	#my $schema = schema('db');
-	#my $schema = $users->{ session('user') }->{'schema_obj'};
 
 	return { data => $schema->resultset($model)->recent(10)->serialize , message => "" };
 	
@@ -106,8 +126,6 @@ get '/api/:model/search' => sub {
 
     my $model = request->params->{'model'};
 	
-	#my $schema = schema('db');
-	#my $schema = $users->{ session('user') }->{'schema_obj'};
 
 	return { data => $schema->resultset($model)->look_for(request->params)->serialize }
 };
@@ -116,9 +134,7 @@ any '/api/:model/custom/:query' => sub {
 
 	my $model = request->params->{'model'};
 	
-	#my $schema = schema('db');
-	#my $schema = $users->{ session('user') }->{'schema_obj'};
-
+	debug ref $schema->resultset($model) ;
 	my $query = request->params->{'query'};
 
 	if ($schema->resultset($model)->can($query)) {
@@ -139,7 +155,7 @@ get '/api/:model/:id' => sub {
     my $model = request->params->{'model'};
 	my $id = request->params->{'id'};
 
-	#my $schema = schema('db');
+	#my $schema = my_schema('db');
 	
 	my $row = $schema->resultset($model)->fetch(request->params->{id});
 
@@ -154,7 +170,7 @@ post '/api/:model/:id' => sub {
 	my $model = request->params->{'model'};
 	my $id = request->params->{'id'};
 	
-	#my $schema = schema('db');
+	#my $schema = my_schema('db');
 
 	my $row = $schema->resultset($model)->fetch(request->params->{id});
 
@@ -171,7 +187,7 @@ post '/api/:model' => sub {
 	
 	my $model = request->params->{'model'};
 	
-	#my $schema = schema('db');
+	#my $schema = my_schema('db');
 
 	my $new = $schema->resultset($model)->fetch_new();
 
@@ -185,7 +201,7 @@ post '/api/:model/new' => sub {
 	
 	my $model = request->params->{'model'};
 	
-	#my $schema = schema('db');
+	#my $schema = my_schema('db');
 
 	my $new = $schema->resultset($model)->fetch_new();
 
