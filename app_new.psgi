@@ -24,6 +24,8 @@ builder {
           	   path => '/status',
           	   allow => [ '127.0.0.1', '192.168.0.0/16' ],
           	   scoreboard => '/tmp';
+		enable "Plack::Middleware::AccessLog",
+				format => "%r %s";
 
     	$app;
 	};

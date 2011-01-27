@@ -1,5 +1,5 @@
 
-package Schema::Base::ResultSet;
+package DB::Schema::Base::ResultSet;
 use strict;
 use warnings;
 use Moose;
