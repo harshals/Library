@@ -15,15 +15,13 @@
 #     REVISION:  ---
 #===============================================================================
 
-package Library;
+package Einvoices;
 use strict;
 use warnings;
 
 
 use Dancer ':syntax';
-use Dancer::Plugin::DBIC;
 
-use App;
 use App::Base;
 use App::Base::Admin::Login;
 use App::Base::Admin::Init;
@@ -41,10 +39,9 @@ get '/' => sub {
 };
 
 
-get '/library' => sub {
+get '/einvoices' => sub {
 	
-	return "Hello from App called Library ";
+	return "Hello from App called Einvoices";
 };
-
 1;
 

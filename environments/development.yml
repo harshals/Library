@@ -35,14 +35,14 @@ auto_reload: 0
 plugins:
   DBIC:
      db:
-       schema_class: "Master"
-       dsn: "dbi:SQLite:dbname=./master.db"
-     User1:
-       schema_class: "User1"
-       dsn: "dbi:SQLite:dbname=./user1.db"
-     User2:
-       schema_class: "User2"
-       dsn: "dbi:SQLite:dbname=./user2.db"
+       schema_class: "DB::Master"
+       dsn: "dbi:SQLite:dbname=./var/master.db"
+#     User1:
+#       schema_class: "User1"
+#       dsn: "dbi:SQLite:dbname=./user1.db"
+#     User2:
+#       schema_class: "User2"
+#       dsn: "dbi:SQLite:dbname=./user2.db"
   Memcached:
    servers: 
      - "localhost:11211"
