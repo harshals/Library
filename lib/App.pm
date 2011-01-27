@@ -6,21 +6,16 @@ use Dancer::Plugin::Memcached;
 use Data::Dumper;
 use Plack::Middleware::Debug::DBIC::QueryLog;
 
-#use App::Base::Admin::Login;
-#use App::Base::Admin::Init;
+
+use App::Plugin::DBIC;
 
 our $VERSION = '0.1';
 
 set serializer => 'JSON';
 
-our $schema ;
-our $user ;
-our $application ;
-
-our $my_schemas ;
-our $users ;
 
 ## index method, simply list 
+
 
 before sub {
 		
@@ -32,25 +27,14 @@ before sub {
 
 
     } elsif (request->path_info !~ m{^/(login|logout|init)} ){
-        
-		$user = $users->{ session('user_id') } ;
 
-		my $master = schema('db');
+		## user is logged in
+		debug "Before " . request->path_info ;
+		## check to connect to right schema 
 
+		my $schema = my_schema;       
 
-		$master->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
-		
-		$user = $users->{ session('user_id') } =  $master->resultset('User')->find( session('user_id') )->serialize
-			unless $user;
-		
-        $application = schema('db')->resultset('Application')->find( $user->{application_id} );
-
-		#debug Dumper($application->serialize);
-
-		$schema = my_schema( $application->schema_class );
-		
 		$schema->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
-
 
 		if (exists request->params->{model}) {
 
@@ -73,7 +57,7 @@ before sub {
 get '/api/:model' => sub {
 
     my $model = request->params->{'model'};
-	
+	my $schema = my_schema;
 
 	return { data => $schema->resultset($model)->recent(10)->serialize , message => "" };
 	
@@ -83,6 +67,7 @@ get '/api/:model/search' => sub {
 	
 
     my $model = request->params->{'model'};
+	my $schema = my_schema;
 	
 
 	return { data => $schema->resultset($model)->look_for(request->params)->serialize }
@@ -91,6 +76,7 @@ get '/api/:model/search' => sub {
 any '/api/:model/custom/:query' => sub {
 
 	my $model = request->params->{'model'};
+	my $schema = my_schema;
 	
 	debug ref $schema->resultset($model) ;
 	my $query = request->params->{'query'};
@@ -112,6 +98,7 @@ get '/api/:model/:id' => sub {
 
     my $model = request->params->{'model'};
 	my $id = request->params->{'id'};
+	my $schema = my_schema;
 
 	#my $schema = my_schema('db');
 	
@@ -127,6 +114,7 @@ post '/api/:model/:id' => sub {
 	
 	my $model = request->params->{'model'};
 	my $id = request->params->{'id'};
+	my $schema = my_schema;
 	
 	#my $schema = my_schema('db');
 
@@ -144,6 +132,7 @@ post '/api/:model/:id' => sub {
 post '/api/:model' => sub {
 	
 	my $model = request->params->{'model'};
+	my $schema = my_schema;
 	
 	#my $schema = my_schema('db');
 
@@ -158,6 +147,7 @@ post '/api/:model' => sub {
 post '/api/:model/new' => sub {
 	
 	my $model = request->params->{'model'};
+	my $schema = my_schema;
 	
 	#my $schema = my_schema('db');
 
@@ -170,6 +160,7 @@ post '/api/:model/new' => sub {
 
 any 'error' => sub {
 	
+	my $schema = my_schema;
 	my $error = Dancer::Error->new(
        	code    => 501,
        	message => vars->{error}
@@ -180,6 +171,7 @@ any 'error' => sub {
 after sub {
 	
 	my $response = shift;
+	my $schema = my_schema;
 
 	#debug Dumper($response);
 };

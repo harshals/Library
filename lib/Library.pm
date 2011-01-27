@@ -21,19 +21,10 @@ use warnings;
 
 
 use Dancer ':syntax';
-use Dancer::Plugin::DBIC;
 
 use App;
-use App::Base;
-use App::Base::Admin::Login;
-use App::Base::Admin::Init;
-
-my $schema = '';
-my $user = '';
-my $application = '';
-
-my $my_schemas = {};
-my $users = {};
+use App::Admin::Login;
+use App::Admin::Init;
 
 get '/' => sub {
 
