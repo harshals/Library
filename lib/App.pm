@@ -171,7 +171,6 @@ any 'error' => sub {
 after sub {
 	
 	my $response = shift;
-	my $schema = my_schema;
 
 	#debug Dumper($response);
 };

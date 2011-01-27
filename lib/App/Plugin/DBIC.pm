@@ -21,7 +21,7 @@ register my_schema=> sub {
 	
 	my $application_id = session('app_id');
 
-	die "The request path is " . request->path_info
+	die "The request path is " . request->path
 		unless $application_id;
 
     return $my_schemas->{$application_id} if $my_schemas->{$application_id};
