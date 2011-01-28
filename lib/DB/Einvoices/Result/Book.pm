@@ -5,7 +5,7 @@ use warnings;
 
 use Moose;
 use namespace::clean -except => 'meta';
-extends qw/Schema::Result::Book/;
+extends qw/DB::Schema::Result::Book/;
 
 __PACKAGE__->resultset_class('DB::Einvoices::ResultSet::Book');
 

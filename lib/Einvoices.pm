@@ -1,7 +1,7 @@
 #
 #===============================================================================
 #
-#         FILE:  Library.pm
+#         FILE:  Einvoices.pm
 #
 #  DESCRIPTION:  
 #
@@ -22,26 +22,21 @@ use warnings;
 
 use Dancer ':syntax';
 
-use App::Base;
-use App::Base::Admin::Login;
-use App::Base::Admin::Init;
-
-my $schema = '';
-my $user = '';
-my $application = '';
-
-my $my_schemas = {};
-my $users = {};
+use App;
+use App::Admin::Login;
+use App::Admin::Init;
 
 get '/' => sub {
 
+	debug "From Einvoices";
     template 'index';
 };
 
 
 get '/einvoices' => sub {
 	
-	return "Hello from App called Einvoices";
+	return "Hello from App called Einvoices ";
 };
+
 1;
 

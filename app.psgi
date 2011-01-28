@@ -1,32 +1,89 @@
+{
+package App1;
+use strict;
+use warnings;
+
+
+use Dancer ':syntax';
+
+get '/' => sub {
+
+	return "Hello from App1";
+};
+
+
+get '/app1' => sub {
+	
+	return "Route app1 called from App1";
+};
+get '/app2' => sub {
+	
+	return "Route app2 called from App1";
+};
+
+
+1;
+
+
+}
+{
+
+package App2;
+use strict;
+use warnings;
+
+
+use Dancer ':syntax';
+
+get '/' => sub {
+
+	return "Hello from App2";
+};
+get '/app1' => sub {
+	
+	return "Route app1 called from App2";
+};
+get '/app2' => sub {
+	
+	return "Route app2 called from App2";
+};
+1;
+}
+
+
 use Dancer;
-load_app 'Library';
-
 use Dancer::Config 'setting';
-Dancer::Config->load;
 
+load_app 'App1', 'App2';
+Dancer::Config->load;
 use Plack::Builder;
-my $app = sub {
+use Plack::App::URLMap;
+
+setting 'apphandler' => "PSGI";
+
+
+
+my $app1 = sub {
     my $env = shift;
     my $request = Dancer::Request->new( $env );
     Dancer->dance( $request );
 };
+my $app2 = sub {
+
+	my $env = shift;
+    my $apps = [ Dancer::App->applications ];
+    my $test_app = Dancer::App->get('App2');
+
+    my $req= Dancer::Request->new( $env );
+    $test_app->new($req);
+    #return [ 200, [ 'Content-Type' => 'text/plain' ], [ 'Hello from App2:' . scalar(@$apps) ] ];
+};
+
 
 builder {
 
-	mount "/" => builder {
-		enable 'Session', store => 'File';
-		enable 'Debug' ,
-			panels => [qw/Memory Response Timer Environment Dancer::Settings Dancer::Logger Parameters Dancer::Version Session DBIC::QueryLog/];
-    	enable "ConsoleLogger";
-		enable "Plack::Middleware::Static",
-          	   path => qr{^/?(images|javascript|css|js)/}, root => './public/';
- 		enable "Plack::Middleware::ServerStatus::Lite",
-          	   path => '/status',
-          	   allow => [ '127.0.0.1', '192.168.0.0/16' ],
-          	   scoreboard => '/tmp';
-
-    	$app;
-	};
+	mount "/a1" => builder { $app1; };
+	mount "/a2" => builder { $app2; };
 	
 };
 

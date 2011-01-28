@@ -27,7 +27,8 @@ use App::Admin::Login;
 use App::Admin::Init;
 
 get '/' => sub {
-
+	
+	debug "From Library";
     template 'index';
 };
 
@@ -36,6 +37,11 @@ get '/library' => sub {
 	
 	return "Hello from App called Library ";
 };
+get '/einvoices' => sub {
+	
+	return "still from App called Library ";
+};
+
 
 1;
 

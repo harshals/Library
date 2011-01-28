@@ -1,4 +1,4 @@
-package User2::ResultSet::Book;
+package DB::Einvoices::ResultSet::Book;
 
 use strict;
 use warnings;
@@ -6,7 +6,7 @@ use Moose;
 use namespace::clean -except => 'meta';
 use Carp;
 
-extends qw/Schema::ResultSet::Book/;
+extends qw/DB::Schema::ResultSet::Book/;
 
 sub crap_by {
 	
