@@ -22,15 +22,7 @@ use warnings;
 
 use Dancer ':syntax';
 
-
-prefix '/a/2';
-
-before  sub {
-
-	debug "From Einvoice before";
-	&App::authenticate(2);
-
-};
+load_app 'App';
 
 get '/' => sub {
 

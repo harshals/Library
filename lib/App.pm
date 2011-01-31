@@ -13,17 +13,11 @@ use App::Plugin::DBIC;
 our $VERSION = '0.1';
 
 
-
 ## index method, simply list 
 
 
 load_app 'App::Admin::Login';
 load_app 'App::Admin::Init';
-
-load_app 'Library';
-
-load_app 'Einvoices';
-
 
 setting 'apphandler' => 'PSGI';
 
@@ -84,7 +78,7 @@ before sub {
 
 ## get list of all items
 
-get '/a/:app_id/:model' => sub {
+get '/api/:model' => sub {
 
     my $model = request->params->{'model'};
 	my $schema = my_schema;
@@ -93,7 +87,7 @@ get '/a/:app_id/:model' => sub {
 	
 };
 
-get '/a/:app_id/:model/search' => sub {
+get '/api/:model/search' => sub {
 	
 
     my $model = request->params->{'model'};
@@ -103,7 +97,7 @@ get '/a/:app_id/:model/search' => sub {
 	return { data => $schema->resultset($model)->look_for(request->params)->serialize }
 };
 
-any '/a/:app_id/:model/custom/:query' => sub {
+any '/api/:model/custom/:query' => sub {
 
 	my $model = request->params->{'model'};
 	my $schema = my_schema;
@@ -124,7 +118,7 @@ any '/a/:app_id/:model/custom/:query' => sub {
 
 #get single item
 
-get '/a/:app_id/:model/:id' => sub {
+get '/api/:model/:id' => sub {
 
     my $model = request->params->{'model'};
 	my $id = request->params->{'id'};
@@ -140,7 +134,7 @@ get '/a/:app_id/:model/:id' => sub {
 
 # update single item
 
-post '/a/:app_id/:model/:id' => sub {
+post '/api/:model/:id' => sub {
 	
 	my $model = request->params->{'model'};
 	my $id = request->params->{'id'};
@@ -159,7 +153,7 @@ post '/a/:app_id/:model/:id' => sub {
 
 # submit a search request
 
-post '/a/:app_id/:model' => sub {
+post '/api/:model' => sub {
 	
 	my $model = request->params->{'model'};
 	my $schema = my_schema;
@@ -174,7 +168,7 @@ post '/a/:app_id/:model' => sub {
 };
 
 # create new item
-post '/a/:app_id/:model/new' => sub {
+post '/api/:model/new' => sub {
 	
 	my $model = request->params->{'model'};
 	my $schema = my_schema;
