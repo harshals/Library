@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 
+use parent 'Dancer';
 use Dancer ':syntax';
-
+setting 'apphandler' => "PSGI";
 get '/' => sub {
 
 	return "Hello from App1";
@@ -32,8 +33,9 @@ package App2;
 use strict;
 use warnings;
 
-
+use parent 'Dancer';
 use Dancer ':syntax';
+setting 'apphandler' => "PSGI";
 
 get '/' => sub {
 
@@ -51,24 +53,25 @@ get '/app2' => sub {
 }
 
 
-use Dancer;
-use Dancer::Config 'setting';
 
-load_app 'App1', 'App2';
-Dancer::Config->load;
 use Plack::Builder;
 use Plack::App::URLMap;
-
-setting 'apphandler' => "PSGI";
-
+use App1;
+use App2;
 
 
 my $app1 = sub {
     my $env = shift;
     my $request = Dancer::Request->new( $env );
-    Dancer->dance( $request );
+    App1->dance( $request );
 };
+
 my $app2 = sub {
+    my $env = shift;
+    my $request = Dancer::Request->new( $env );
+    App2->dance( $request );
+};
+my $app3 = sub {
 
 	my $env = shift;
     my $apps = [ Dancer::App->applications ];
