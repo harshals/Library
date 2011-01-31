@@ -2,6 +2,7 @@ package App;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::FlashMessage;
 use Dancer::Plugin::Memcached;
 use Data::Dumper;
 use Plack::Middleware::Debug::DBIC::QueryLog;
@@ -11,50 +12,79 @@ use App::Plugin::DBIC;
 
 our $VERSION = '0.1';
 
-set serializer => 'JSON';
 
 
 ## index method, simply list 
 
 
-before sub {
+load_app 'App::Admin::Login';
+load_app 'App::Admin::Init';
+
+load_app 'Library';
+
+load_app 'Einvoices';
+
+
+setting 'apphandler' => 'PSGI';
+
+set serializer => 'JSON';
+
+sub authenticate {
+
+	my $app_id = shift;
+	debug "Authenticate $app_id :" . request->path_info ;
+	
+	if (request->path_info !~ m{^/(login|init)}) {
 		
+		if (!session('user_id') || session('app_id') ne $app_id) {
 
-	if (! session('user_id') && request->path_info !~ m{^/(login|init)}) {
-        var requested_path => request->path_info;
-        
-        request->path_info('/login');
+			flash requested_path => request->path_info;
+			request->path_info('/login');
 
+		} else {
 
-    } elsif (request->path_info !~ m{^/(login|logout|init)} ){
+			## check to connect to right schema 
 
-		## user is logged in
-		debug "Before " . request->path_info ;
-		## check to connect to right schema 
+			my $schema = my_schema;       
 
-		my $schema = my_schema;       
+			$schema->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
 
-		$schema->init_debugger(request->env->{+Plack::Middleware::Debug::DBIC::QueryLog::PSGI_KEY});
+			if (exists request->params->{model}) {
 
-		if (exists request->params->{model}) {
+				my $sources = join(',', $schema->sources);
+				my $model = request->params->{'model'};
 
-			my $sources = join(',', $schema->sources);
-			my $model = request->params->{'model'};
+				unless ( $sources =~ m/$model/) {
 
-			unless ( $sources =~ m/$model/) {
-				
-				send_error("model cannot be found");
-				#request->path_info('/error');
+					send_error("model [ $model ] cannot be found");
+				}
 			}
-		}
-    }
 
+		}
+
+	}else {
+
+		## do something if login or logout is accessed
+
+	}
+
+}
+
+before sub {
+	
+	debug "coming in main before";	
+	my $app_id = request->params->{'app_id'};
+
+	send_error("Application ID cannot be found") unless $app_id;	
+
+	&authenticate($app_id);
 	
 };
 
+
 ## get list of all items
 
-get '/api/:model' => sub {
+get '/a/:app_id/:model' => sub {
 
     my $model = request->params->{'model'};
 	my $schema = my_schema;
@@ -63,7 +93,7 @@ get '/api/:model' => sub {
 	
 };
 
-get '/api/:model/search' => sub {
+get '/a/:app_id/:model/search' => sub {
 	
 
     my $model = request->params->{'model'};
@@ -73,7 +103,7 @@ get '/api/:model/search' => sub {
 	return { data => $schema->resultset($model)->look_for(request->params)->serialize }
 };
 
-any '/api/:model/custom/:query' => sub {
+any '/a/:app_id/:model/custom/:query' => sub {
 
 	my $model = request->params->{'model'};
 	my $schema = my_schema;
@@ -94,7 +124,7 @@ any '/api/:model/custom/:query' => sub {
 
 #get single item
 
-get '/api/:model/:id' => sub {
+get '/a/:app_id/:model/:id' => sub {
 
     my $model = request->params->{'model'};
 	my $id = request->params->{'id'};
@@ -110,7 +140,7 @@ get '/api/:model/:id' => sub {
 
 # update single item
 
-post '/api/:model/:id' => sub {
+post '/a/:app_id/:model/:id' => sub {
 	
 	my $model = request->params->{'model'};
 	my $id = request->params->{'id'};
@@ -129,7 +159,7 @@ post '/api/:model/:id' => sub {
 
 # submit a search request
 
-post '/api/:model' => sub {
+post '/a/:app_id/:model' => sub {
 	
 	my $model = request->params->{'model'};
 	my $schema = my_schema;
@@ -144,7 +174,7 @@ post '/api/:model' => sub {
 };
 
 # create new item
-post '/api/:model/new' => sub {
+post '/a/:app_id/:model/new' => sub {
 	
 	my $model = request->params->{'model'};
 	my $schema = my_schema;
@@ -171,7 +201,7 @@ any 'error' => sub {
 after sub {
 	
 	my $response = shift;
-
+	
 	#debug Dumper($response);
 };
 

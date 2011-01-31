@@ -22,9 +22,15 @@ use warnings;
 
 use Dancer ':syntax';
 
-use App;
-use App::Admin::Login;
-use App::Admin::Init;
+
+prefix '/a/2';
+
+before  sub {
+
+	debug "From Einvoice before";
+	&App::authenticate(2);
+
+};
 
 get '/' => sub {
 
@@ -33,7 +39,7 @@ get '/' => sub {
 };
 
 
-get '/einvoices' => sub {
+get '/route1' => sub {
 	
 	return "Hello from App called Einvoices ";
 };

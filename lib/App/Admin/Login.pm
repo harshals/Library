@@ -22,13 +22,12 @@ use warnings;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
-
+use Dancer::Plugin::FlashMessage;
 
 get '/logout' => sub {
 	
-	debug "coming here";
-	session user_id => '';
-	session app_id => '';
+	session $_ => '' foreach qw/user_id app_id app_name id/;
+
 	template 'login';
 };
 
@@ -51,9 +50,10 @@ post '/login' => sub {
 		my $application = $user->application;
 		
         session app_id => $application->id;
-
+		
+		session app_name => $application->name;
      			
-        redirect params->{path} || '/';
+        redirect flash('requested_path') || '/';
 
     } else {
         redirect '/login?failed=1';
