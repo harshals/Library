@@ -1,4 +1,4 @@
-package App;
+package App2;
 
 use Data::Dumper;
 use Plack::Middleware::Debug::DBIC::QueryLog;
@@ -7,40 +7,23 @@ use JSON::XS qw/encode_json/;
 
 ## index method, simply list 
 use Moo;
+extends qw/App/;
+
 use Web::Simple __PACKAGE__;
 
-has title => (  is => 'rw');
-
-sub render_html {
-  my ($self, $data) = @_;
-  return $data if ref($data) eq 'ARRAY';
-  return [
-    200,
-    [ 'Content-type', 'text/html' ],
-    ["from " .  __PACKAGE__ . ":" . $self->title	]
-  ];
-}
-
-sub render_json {
-	
-  my ($self, $data) = @_;
-
-
-	return [ 200, 
-		[ 'Content-type', 'application/json' ], 
-		[ encode_json({ data => $data }) ], ];
-}
 
 sub dispatch_request {
-	my $self = shift;
-  sub (GET + /) {
-	#[ 200, [ 'Content-type', 'text/html' ], [ "Welcome to Deimos Lite" ], ];
-	$self->render_html;
-  },
-  sub (GET + /json) {
 
-	$self->render_json("My JSON" . $self->title);
-  }
+	my $self = shift;
+
+	sub (GET + /special) {
+	#[ 200, [ 'Content-type', 'text/html' ], [ "Welcome to Deimos Lite" ], ];
+		$self->render_html;
+ 	 },
+ 	 sub (GET + /json) {
+
+		$self->render_json("My JSON" . $self->title);
+	  }
 };
 1;
 
