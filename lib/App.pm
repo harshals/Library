@@ -1,25 +1,51 @@
 package App;
 
-use Dancer ':syntax';
-use Dancer::Plugin::DBIC;
-use Dancer::Plugin::FlashMessage;
-use Dancer::Plugin::Memcached;
 use Data::Dumper;
 use Plack::Middleware::Debug::DBIC::QueryLog;
-
-
-use App::Plugin::DBIC;
-
-our $VERSION = '0.1';
+use JSON::XS qw/encode_json/;
 
 
 ## index method, simply list 
 
+use Web::Simple __PACKAGE__;
 
-load_app 'App::Admin::Login';
-load_app 'App::Admin::Init';
+has title => (  is => 'rw');
 
-setting 'apphandler' => 'PSGI';
+
+sub render_html {
+  my ($self, $data) = @_;
+  return $data if ref($data) eq 'ARRAY';
+  return [
+    200,
+    [ 'Content-type', 'text/html' ],
+    ["My HTML " . $self->title	]
+  ];
+}
+
+sub render_json {
+	
+  my ($self, $data) = @_;
+
+
+	return [ 200, 
+		[ 'Content-type', 'application/json' ], 
+		[ encode_json({ data => $data }) ], ];
+}
+
+sub dispatch_request {
+	my $self = shift;
+  sub (GET + /) {
+	#[ 200, [ 'Content-type', 'text/html' ], [ "Welcome to Deimos Lite" ], ];
+	$self->render_html;
+  },
+  sub (GET + /json) {
+
+	$self->render_json("My JSON" . $self->title);
+  }
+};
+1;
+
+=pod
 
 set serializer => 'JSON';
 
@@ -201,3 +227,5 @@ after sub {
 
 
 true;
+
+=cut
