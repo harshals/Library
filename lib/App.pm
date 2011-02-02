@@ -13,11 +13,10 @@ has title => (  is => 'rw');
 
 sub render_html {
   my ($self, $data) = @_;
-  return $data if ref($data) eq 'ARRAY';
   return [
     200,
     [ 'Content-type', 'text/html' ],
-    ["from " .  __PACKAGE__ . ":" . $self->title	]
+    ["from " .  __PACKAGE__ . ":" . $data || $self->title	]
   ];
 }
 
@@ -33,13 +32,16 @@ sub render_json {
 
 sub dispatch_request {
 	my $self = shift;
+
+	print STDERR "in App\n";
   sub (GET + /) {
 	#[ 200, [ 'Content-type', 'text/html' ], [ "Welcome to Deimos Lite" ], ];
 	$self->render_html;
   },
   sub (GET + /json) {
 
-	$self->render_json("My JSON" . $self->title);
+	  print STDERR "in App JSON\n";
+	$self->render_json("My 1st JSON " . $self->title);
   }
 };
 1;

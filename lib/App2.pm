@@ -12,18 +12,25 @@ extends qw/App/;
 use Web::Simple __PACKAGE__;
 
 
-sub dispatch_request {
+before 'dispatch_request' => sub  {
 
 	my $self = shift;
-
+	
+	print STDERR "in App2\n";
 	sub (GET + /special) {
 	#[ 200, [ 'Content-type', 'text/html' ], [ "Welcome to Deimos Lite" ], ];
-		$self->render_html;
+		$self->render_html("from 2bd Aoo");
  	 },
  	 sub (GET + /json) {
 
-		$self->render_json("My JSON" . $self->title);
-	  }
+		 print STDERR "in App2 JSON\n";
+		$self->render_json("My 2nd JSON" . $self->title);
+	 },
+	 sub (GET) {
+		
+		 print STDERR "not matched anything\n";
+		$self->render_html;
+	 }
 };
 1;
 

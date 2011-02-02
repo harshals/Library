@@ -1,0 +1,13 @@
+Tried replacing Dancer with Web::Simple.
+
+cons -
+
+1. can't override or extend dispatch_request subroutine
+2. Hence you cannot use paths defined in the base class
+3. all paths ahve to be redefined again
+
+pros -
+
+Can host multiple apps using single PSGI file.
+
+
