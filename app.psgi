@@ -47,9 +47,18 @@ my $app3 = sub {
 
 builder {
 
-	mount "/a1" => builder { $app1; };
+	mount "/a1" => builder { 
+		enable 'Session', store => 'File';
+		enable 'Debug' ,
+			panels => [qw/Memory Response Timer Environment Dancer::Settings Dancer::Logger Parameters Dancer::Version Session DBIC::QueryLog/];
+    	enable "ConsoleLogger";
+		enable "Plack::Middleware::Static",
+          	   path => qr{^/?(images|javascript|css|js)/}, root => './public/';
+ 	
+	$app1; };
 	mount "/a2" => builder { $app3; };
 	
 };
+
 
 
