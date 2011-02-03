@@ -1,7 +1,7 @@
 use Dancer;
 
 use Plack::Builder;
-load_app 'App';
+load_app 'App::Library';
 
 
 my $app = sub {

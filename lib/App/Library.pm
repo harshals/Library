@@ -27,7 +27,8 @@ load_app 'App';
 get '/' => sub {
 
 	debug "From Library";
-    template 'index';
+	return "hello world";
+    #template 'index';
 };
 
 

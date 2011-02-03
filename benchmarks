@@ -1,0 +1,165 @@
+With Standalone Server - returning login page
+
+Harshal-Shahs-Mac-mini:~ harshal$ ab -n1000 -c100 http://127.0.0.01:5000/?app_id=1
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 127.0.0.01 (be patient)
+^C
+
+Server Software:        HTTP::Server::PSGI
+Server Hostname:        127.0.0.01
+Server Port:            5000
+
+Document Path:          /?app_id=1
+Document Length:        23810 bytes
+
+Concurrency Level:      100
+Time taken for tests:   1.379 seconds
+Complete requests:      35
+Failed requests:        34
+   (Connect: 0, Receive: 0, Length: 34, Exceptions: 0)
+Write errors:           0
+Total transferred:      845359 bytes
+HTML transferred:       833471 bytes
+Requests per second:    25.38 [#/sec] (mean)
+Time per request:       3940.697 [ms] (mean)
+Time per request:       39.407 [ms] (mean, across all concurrent requests)
+Transfer rate:          598.55 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        4    5   0.5      5       6
+Processing:    41  700 397.0    717    1360
+Waiting:       41  700 397.0    717    1360
+Total:         47  705 396.5    722    1364
+
+Percentage of the requests served within a certain time (ms)
+  50%    703
+  66%    937
+  75%   1053
+  80%   1130
+  90%   1246
+  95%   1324
+  98%   1364
+  99%   1364
+ 100%   1364 (longest request)
+Harshal-Shahs-Mac-mini:~ harshal$ ab -n1000 -c100 http://127.0.0.1:5000/?app_id=1
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 127.0.0.1 (be patient)
+Completed 100 requests
+Completed 200 requests
+Completed 300 requests
+Completed 400 requests
+Completed 500 requests
+Completed 600 requests
+Completed 700 requests
+Completed 800 requests
+Completed 900 requests
+Completed 1000 requests
+Finished 1000 requests
+
+
+Server Software:        HTTP::Server::PSGI
+Server Hostname:        127.0.0.1
+Server Port:            5000
+
+Document Path:          /?app_id=1
+Document Length:        23791 bytes
+
+Concurrency Level:      100
+Time taken for tests:   45.779 seconds
+Complete requests:      1000
+Failed requests:        856
+   (Connect: 0, Receive: 0, Length: 856, Exceptions: 0)
+Write errors:           0
+Total transferred:      24138508 bytes
+HTML transferred:       23798841 bytes
+Requests per second:    21.84 [#/sec] (mean)
+Time per request:       4577.931 [ms] (mean)
+Time per request:       45.779 [ms] (mean, across all concurrent requests)
+Transfer rate:          514.92 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.7      0       4
+Processing:    68 4349 1031.3   4460    6259
+Waiting:       68 4349 1031.3   4459    6258
+Total:         72 4349 1030.7   4460    6259
+
+Percentage of the requests served within a certain time (ms)
+  50%   4460
+  66%   4573
+  75%   4745
+  80%   4908
+  90%   5254
+  95%   6183
+  98%   6237
+  99%   6248
+ 100%   6259 (longest request)
+
+
+>>> With Starman - returning login page
+
+
+Harshal-Shahs-Mac-mini:~ harshal$ ab -n1000 -c100 http://127.0.0.1:5000/?app_id=1
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 127.0.0.1 (be patient)
+Completed 100 requests
+Completed 200 requests
+Completed 300 requests
+Completed 400 requests
+Completed 500 requests
+Completed 600 requests
+Completed 700 requests
+Completed 800 requests
+Completed 900 requests
+Completed 1000 requests
+Finished 1000 requests
+
+
+Server Software:        
+Server Hostname:        127.0.0.1
+Server Port:            5000
+
+Document Path:          /?app_id=1
+Document Length:        23871 bytes
+
+Concurrency Level:      100
+Time taken for tests:   24.238 seconds
+Complete requests:      1000
+Failed requests:        804
+   (Connect: 0, Receive: 0, Length: 804, Exceptions: 0)
+Write errors:           0
+Total transferred:      24179388 bytes
+HTML transferred:       23871758 bytes
+Requests per second:    41.26 [#/sec] (mean)
+Time per request:       2423.840 [ms] (mean)
+Time per request:       24.238 [ms] (mean, across all concurrent requests)
+Transfer rate:          974.18 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    1   1.5      0      10
+Processing:  1140 2312 222.7   2306    3552
+Waiting:     1140 2308 222.6   2302    3551
+Total:       1146 2312 222.3   2307    3553
+
+Percentage of the requests served within a certain time (ms)
+  50%   2307
+  66%   2342
+  75%   2361
+  80%   2370
+  90%   2401
+  95%   2456
+  98%   3106
+  99%   3304
+ 100%   3553 (longest request)
+
